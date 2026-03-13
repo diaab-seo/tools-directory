@@ -1,9 +1,8 @@
 ---
 import Base from '../layouts/Base.astro';
+import { env } from 'cloudflare:workers';
 
 export const prerender = false; // Need D1 to fetch dynamic list
-
-const env = Astro.locals.runtime.env;
 
 // Fetch all categories and their tool counts
 const { results } = await env.DB.prepare(`

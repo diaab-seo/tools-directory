@@ -8,6 +8,9 @@ export default defineConfig({
   adapter: cloudflare({
     platformProxy: {
       enabled: true
+    },
+    assets: {
+      binding: 'CF_ASSETS'
     }
   }),
   integrations: [tailwind(), sitemap()],

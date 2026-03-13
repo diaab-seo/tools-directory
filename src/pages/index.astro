@@ -3,10 +3,9 @@ import Base from '../layouts/Base.astro';
 import ToolGrid from '../components/ToolGrid.astro';
 import ToolCard from '../components/ToolCard.astro';
 import { getFilteredTools } from '../lib/db';
+import { env } from 'cloudflare:workers';
 
 export const prerender = false; // We use D1 for the counts/featured tools on homepage
-
-const env = Astro.locals.runtime.env;
 
 // Fetch random/featured top-rated tools
 const featuredTools = await getFilteredTools(env, { sortFilter: 'top-rated', limit: 8 });

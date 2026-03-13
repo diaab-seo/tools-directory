@@ -4,11 +4,11 @@ import ToolGrid from '../../components/ToolGrid.astro';
 import ToolCard from '../../components/ToolCard.astro';
 import { getToolBySlug, getRelatedTools } from '../../lib/db';
 import { formatToolTitle } from '../../lib/seo';
+import { env } from 'cloudflare:workers';
 
 export const prerender = false;
 
 const { slug } = Astro.params;
-const env = Astro.locals.runtime.env;
 
 if (!slug) return Astro.redirect('/404');
 

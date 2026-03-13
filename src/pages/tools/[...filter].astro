@@ -6,10 +6,10 @@ import FilterBar from '../../components/FilterBar.astro';
 import Pagination from '../../components/Pagination.astro';
 import { getFilteredTools, getCategoryBySlug } from '../../lib/db';
 import { formatCategoryTitle, formatFilterTitle } from '../../lib/seo';
+import { env } from 'cloudflare:workers';
 
 export const prerender = false;
 
-const env = Astro.locals.runtime.env;
 const segments = Astro.params.filter?.split('/').filter(Boolean) ?? [];
 
 // Route Parsing

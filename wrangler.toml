@@ -1,11 +1,23 @@
-[[ d1_databases ]]
+name = "tools-directory"
+compatibility_date = "2024-11-20"
+pages_build_output_dir = "dist"
+
+[assets]
+binding = "CF_ASSETS"
+directory = "dist/client"
+
+[[d1_databases]]
 binding = "DB"
 database_name = "ai-tools"
-database_id   = "5c59f883-511f-4a79-bf4a-5ce6e2e9b38b"
+database_id = "5c59f883-511f-4a79-bf4a-5ce6e2e9b38b"
 
-[[ kv_namespaces ]]
+[[kv_namespaces]]
 binding = "CACHE"
-id      = "ae59198110e24994b4111d33bbab0f5e"
+id = "ae59198110e24994b4111d33bbab0f5e"
+
+[[kv_namespaces]]
+binding = "SESSION"
+id = "f864ae561cef438490b62502db2de5db"
 
 [vars]
-GEMINI_API_KEY = "AIzaSyAtR4SzX6vYdC7Jlhr0435CgX17TsyWzIU"   # Set in Pages dashboard, not here
+GEMINI_API_KEY = "AIzaSyAtR4SzX6vYdC7Jlhr0435CgX17TsyWzIU"
