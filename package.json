@@ -31,5 +31,10 @@
     "better-sqlite3": "^12.6.2",
     "csv-parse": "^6.1.0",
     "tsx": "^4.21.0"
+  },
+  "overrides": {
+    "@astrojs/tailwind": {
+      "astro": "$astro"
+    }
   }
 }
