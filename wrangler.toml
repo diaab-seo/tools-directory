@@ -16,12 +16,8 @@ binding = "CACHE"
 id = "ae59198110e24994b4111d33bbab0f5e"
 
 [[kv_namespaces]]
-binding = "KV"
-id = "f864ae561cef438490b62502db2de5db"
-
-[[kv_namespaces]]
 binding = "SESSION"
-id = "your-session-kv-id-here"
+id = "f864ae561cef438490b62502db2de5db"
 
 [vars]
 GEMINI_API_KEY = "AIzaSyAtR4SzX6vYdC7Jlhr0435CgX17TsyWzIU"
