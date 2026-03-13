@@ -1,12 +1,6 @@
 name = "tools-directory"
 compatibility_date = "2024-11-20"
-main = "@astrojs/cloudflare/entrypoints/server"
-
-[build]
-command = "npm run build"
-
-[assets]
-directory = "dist/client"
+pages_build_output_dir = "dist"
 
 [[ d1_databases ]]
 binding = "DB"
