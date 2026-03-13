@@ -1,6 +1,6 @@
 name = "tools-directory"
 compatibility_date = "2024-11-20"
-main = "dist/_worker.js"
+pages_build_output_dir = "dist"
 
 [assets]
 binding = "CF_ASSETS"
@@ -21,7 +21,7 @@ id = "f864ae561cef438490b62502db2de5db"
 
 [[kv_namespaces]]
 binding = "SESSION"
-id = "tools-directory-session-id-here"
+id = "your-session-kv-id-here"
 
 [vars]
 GEMINI_API_KEY = "AIzaSyAtR4SzX6vYdC7Jlhr0435CgX17TsyWzIU"
