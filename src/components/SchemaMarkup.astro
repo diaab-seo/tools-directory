@@ -1,0 +1,82 @@
+---
+export interface Props {
+  type: 'WebSite' | 'Organization' | 'SoftwareApplication' | 'CollectionPage';
+  data: any;
+}
+
+const { type, data } = Astro.props;
+
+let schema: any = {
+  "@context": "https://schema.org",
+  "@type": type,
+};
+
+if (type === 'SoftwareApplication') {
+  schema = {
+    ...schema,
+    "name": data.name,
+    "description": data.description,
+    "url": data.url,
+    "image": data.image,
+    "applicationCategory": "BusinessApplication",
+    "operatingSystem": "Web",
+    "offers": {
+      "@type": "Offer",
+      "price": data.price || "0",
+      "priceCurrency": "USD"
+    }
+  };
+  if (data.rating) {
+    schema["aggregateRating"] = {
+      "@type": "AggregateRating",
+      "ratingValue": data.rating.toString(),
+      "reviewCount": (data.votes || 1).toString()
+    };
+  }
+} else if (type === 'CollectionPage') {
+  schema = {
+    ...schema,
+    "name": data.name,
+    "description": data.description,
+    "url": data.url,
+    "numberOfItems": data.numberOfItems,
+  };
+  
+  if (data.items && data.items.length > 0) {
+    schema["itemListElement"] = data.items.slice(0, 10).map((item: any, index: number) => ({
+      "@type": "ListItem",
+      "position": index + 1,
+      "item": {
+        "@type": "SoftwareApplication",
+        "name": item.name,
+        "url": item.url
+      }
+    }));
+  }
+} else if (type === 'WebSite') {
+  schema = {
+    ...schema,
+    "name": data.name,
+    "url": data.url,
+    "description": data.description,
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": {
+        "@type": "EntryPoint",
+        "urlTemplate": `${data.url}/search?q={search_term_string}`
+      },
+      "query-input": "required name=search_term_string"
+    }
+  };
+} else if (type === 'Organization') {
+  schema = {
+    ...schema,
+    "name": data.name,
+    "url": data.url,
+    "logo": data.logo,
+    "sameAs": data.socialLinks || []
+  };
+}
+---
+
+<script type="application/ld+json" set:html={JSON.stringify(schema)} />

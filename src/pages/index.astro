@@ -1,0 +1,181 @@
+---
+import Base from '../layouts/Base.astro';
+import ToolGrid from '../components/ToolGrid.astro';
+import ToolCard from '../components/ToolCard.astro';
+import { getFilteredTools } from '../lib/db';
+
+export const prerender = false; // We use D1 for the counts/featured tools on homepage
+
+const env = Astro.locals.runtime.env;
+
+// Fetch random/featured top-rated tools
+const featuredTools = await getFilteredTools(env, { sortFilter: 'top-rated', limit: 8 });
+
+// Fetch newest tools
+const newTools = await getFilteredTools(env, { sortFilter: 'newest', limit: 8 });
+
+// Fetch free tools
+const freeTools = await getFilteredTools(env, { pricingFilter: 'free', limit: 8 });
+
+// Stats and Categories
+const stats = await env.DB.prepare('SELECT COUNT(*) as tool_count FROM tools').first();
+const categoriesReq = await env.DB.prepare('SELECT c.name, c.slug, COUNT(tc.tool_id) as count FROM categories c JOIN tool_categories tc ON c.id = tc.category_id GROUP BY c.id ORDER BY count DESC LIMIT 8').all();
+const categories = categoriesReq.results || [];
+
+const pageDescription = "Discover the best AI tools and apps for image generation, text, video, and more. A comprehensive directory of free and premium artificial intelligence software.";
+---
+
+<Base 
+  title="AI Prompts Mall - The Ultimate Directory of AI Tools & Software" 
+  description={pageDescription}
+  schemaType="WebSite"
+  schemaData={{
+    name: "AI Prompts Mall",
+    url: Astro.site || "https://aipromptsmall.shop",
+    description: pageDescription
+  }}
+>
+  {/* Hero Section */}
+  <section class="relative bg-gradient-to-b from-indigo-50 to-white dark:from-slate-900 dark:to-slate-950 pt-24 pb-20 lg:pt-32 border-b border-slate-200 dark:border-slate-800 overflow-hidden">
+    <div class="absolute inset-0 bg-grid-slate-100 dark:bg-grid-slate-900/[0.04] bg-[bottom_1px_center] text-slate-200 dark:text-slate-800" style="mask-image: linear-gradient(to bottom, transparent, black);"></div>
+    <div class="container relative mx-auto px-4 md:px-8 text-center max-w-4xl">
+      <h1 class="text-4xl md:text-5xl lg:text-7xl font-extrabold tracking-tight text-slate-900 dark:text-white mb-6">
+        Discover the World's Best <span class="bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400">AI Tools</span>
+      </h1>
+      <p class="text-lg md:text-xl text-slate-600 dark:text-slate-400 mb-10 max-w-2xl mx-auto leading-relaxed">
+        Search our directory of <span class="font-bold text-indigo-600 dark:text-indigo-400">{stats?.tool_count || '3,900+'}</span> artificial intelligence apps, properly categorised and reviewed so you can stop searching and start creating.
+      </p>
+      
+      {/* PageFind Search Input (Astro Island conceptually, just standard HTML for now that PageFind will attach to) */}
+      <div class="max-w-2xl mx-auto bg-white dark:bg-slate-900 p-2 rounded-2xl shadow-xl shadow-indigo-100 dark:shadow-indigo-900/20 border border-slate-200 dark:border-slate-800 mb-8 flex items-center">
+         <div id="search" class="w-full">
+            {/* PageFind will replace this div contents at runtime. We'll add a placeholder style for build. */}
+            <input type="text" placeholder="Search for AI image generators, text tools..." class="w-full bg-transparent px-4 py-3 outline-none text-slate-900 dark:text-white placeholder-slate-400" disabled />
+         </div>
+      </div>
+      
+      <div class="flex flex-wrap items-center justify-center gap-3">
+        <span class="text-sm font-medium text-slate-500 mr-2">Popular Searches:</span>
+        <a href="/tools/image-generation/" class="px-3 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full text-sm font-medium hover:border-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Image Gen</a>
+        <a href="/tools/llm-models/" class="px-3 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full text-sm font-medium hover:border-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">LLMs</a>
+        <a href="/tools/productivity/" class="px-3 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full text-sm font-medium hover:border-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Productivity</a>
+      </div>
+    </div>
+  </section>
+
+  {/* Category Grid Section */}
+  <section class="py-20 bg-white dark:bg-slate-950">
+    <div class="container mx-auto px-4 md:px-8">
+      <div class="flex justify-between items-end mb-10">
+        <div>
+          <h2 class="text-3xl font-bold text-slate-900 dark:text-white">Browse by Category</h2>
+          <p class="text-slate-600 dark:text-slate-400 mt-2">Find the exact tools you need.</p>
+        </div>
+        <a href="/categories/" class="hidden md:flex items-center text-indigo-600 dark:text-indigo-400 font-semibold hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors">
+          View all categories <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+        </a>
+      </div>
+      
+      <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4 md:gap-6">
+        {categories.map((cat: any) => (
+          <a href={`/tools/${cat.slug}/`} class="group flex flex-col items-center justify-center p-6 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl hover:bg-white dark:hover:bg-slate-800 hover:border-indigo-500 dark:hover:border-indigo-500 hover:shadow-lg transition-all">
+            <h3 class="font-semibold text-slate-900 dark:text-white mb-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{cat.name}</h3>
+            <span class="text-sm text-slate-500">{cat.count} tools</span>
+          </a>
+        ))}
+      </div>
+      <div class="mt-8 text-center md:hidden">
+         <a href="/categories/" class="inline-flex items-center text-indigo-600 dark:text-indigo-400 font-semibold border border-indigo-200 dark:border-indigo-900 rounded-full px-6 py-2">
+           View all categories
+         </a>
+      </div>
+    </div>
+  </section>
+
+  {/* Top Rated Tools Section */}
+  <section class="py-20 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-200 dark:border-slate-800">
+    <div class="container mx-auto px-4 md:px-8">
+       <div class="flex justify-between items-end mb-10">
+        <div>
+          <h2 class="text-3xl font-bold text-slate-900 dark:text-white">Top Rated AI Tools</h2>
+          <p class="text-slate-600 dark:text-slate-400 mt-2">The highest reviewed community favorites.</p>
+        </div>
+        <a href="/tools/top-rated/" class="hidden md:flex items-center text-indigo-600 dark:text-indigo-400 font-semibold">
+          Explore top rated <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+        </a>
+      </div>
+      
+      <ToolGrid>
+        {featuredTools.map((tool) => <ToolCard tool={tool as any} />)}
+      </ToolGrid>
+    </div>
+  </section>
+
+  {/* New Arrivals Section */}
+  <section class="py-20 bg-white dark:bg-slate-950 border-y border-slate-200 dark:border-slate-800">
+    <div class="container mx-auto px-4 md:px-8">
+       <div class="flex justify-between items-end mb-10">
+        <div>
+          <h2 class="text-3xl font-bold text-slate-900 dark:text-white">Newest Additions</h2>
+          <p class="text-slate-600 dark:text-slate-400 mt-2">Cutting-edge tech just added to the directory.</p>
+        </div>
+        <a href="/tools/newest/" class="hidden md:flex items-center text-indigo-600 dark:text-indigo-400 font-semibold">
+          Explore newest <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+        </a>
+      </div>
+      
+      <ToolGrid>
+        {newTools.map((tool) => <ToolCard tool={tool as any} />)}
+      </ToolGrid>
+    </div>
+  </section>
+
+  {/* Free Tools Spotlight Section */}
+  <section class="py-20 bg-indigo-900 dark:bg-indigo-950 relative overflow-hidden">
+    <!-- Background Decor -->
+    <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+    <div class="absolute top-0 right-0 -mr-40 -mt-40 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
+    <div class="absolute bottom-0 left-0 -ml-40 -mb-40 w-96 h-96 bg-indigo-500 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000"></div>
+
+    <div class="container relative mx-auto px-4 md:px-8">
+      <div class="flex flex-col md:flex-row justify-between items-center mb-12 text-center md:text-left">
+        <div class="mb-6 md:mb-0">
+          <h2 class="text-3xl md:text-4xl font-bold text-white mb-3">100% Free AI Tools</h2>
+          <p class="text-indigo-200 text-lg max-w-xl">No subscriptions, no hidden trials. Powerful AI capabilities available completely free of charge.</p>
+        </div>
+        <a href="/tools/free/" class="bg-white text-indigo-600 hover:bg-indigo-50 px-8 py-3.5 rounded-full font-bold shadow-xl transition-transform hover:-translate-y-1">
+          Browse All Free Tools
+        </a>
+      </div>
+      
+      {/* Dark mode overrides for cards placed on the dark background naturally */}
+      <div class="dark">
+        <ToolGrid>
+          {freeTools.map((tool) => <ToolCard tool={tool as any} />)}
+        </ToolGrid>
+      </div>
+    </div>
+  </section>
+
+  {/* PageFind Initializer script */}
+  <script is:inline>
+    // In a real production deployment, you'll need the PageFind CSS injected.
+    // Astro build command creates the /pagefind/ directory after the HTML is built.
+    document.addEventListener("DOMContentLoaded", () => {
+      // Stub logic - Replace with real PageFind once index is built.
+      if (typeof window !== "undefined" && window.location.pathname === '/') {
+          import('/pagefind/pagefind-ui.js').then(({ PagefindUI }) => {
+            new PagefindUI({
+                element: "#search",
+                showSubResults: true,
+                filters: { category: true, pricing: true },
+                excerptLength: 12,
+                resetStyles: false,
+            });
+          }).catch(() => {
+            console.log("PageFind UI not available yet. Run astro build && npx pagefind --site dist");
+          });
+      }
+    });
+  </script>
+</Base>

@@ -1,0 +1,147 @@
+---
+import Base from '../../layouts/Base.astro';
+import ToolGrid from '../../components/ToolGrid.astro';
+import ToolCard from '../../components/ToolCard.astro';
+import FilterBar from '../../components/FilterBar.astro';
+import Pagination from '../../components/Pagination.astro';
+import { getFilteredTools, getCategoryBySlug } from '../../lib/db';
+import { formatCategoryTitle, formatFilterTitle } from '../../lib/seo';
+
+export const prerender = false;
+
+const env = Astro.locals.runtime.env;
+const segments = Astro.params.filter?.split('/').filter(Boolean) ?? [];
+
+// Route Parsing
+let catSlug = '';
+let pricingFilter: string | null = null;
+let pageNumber = 1;
+
+// Identify category
+if (segments.length > 0 && !['free', 'freemium', 'paid', 'top-rated', 'newest', 'page'].includes(segments[0])) {
+  catSlug = segments[0];
+}
+
+// Identify pricing
+const pricingIndex = segments.findIndex(s => ['free', 'freemium', 'paid'].includes(s));
+if (pricingIndex !== -1) pricingFilter = segments[pricingIndex];
+
+// Identify pagination
+const pageIndex = segments.findIndex(s => s === 'page');
+if (pageIndex !== -1 && segments[pageIndex + 1]) {
+  pageNumber = parseInt(segments[pageIndex + 1], 10) || 1;
+}
+
+// Optional cursor (passed via query string for deep pagination)
+const cursorParam = Astro.url.searchParams.get('cursor');
+let cursor = cursorParam ? parseInt(cursorParam, 10) : undefined;
+
+// In a real production app without offsets, you HAVE to traverse forward via cursor links.
+// For the direct page 1 load, cursor is undefined.
+
+const limit = 24;
+
+// Fetch category info if applicable
+let activeCat = null;
+if (catSlug) {
+  activeCat = await getCategoryBySlug(env, catSlug);
+  if (!activeCat) return Astro.redirect('/404');
+}
+
+// Build D1 Query
+const tools = await getFilteredTools(env, {
+  catSlugs: catSlug ? [catSlug] : [],
+  pricingFilter: pricingFilter,
+  cursor: cursor,
+  limit: limit + 1 // +1 to check if there is a next page
+});
+
+const hasNextPage = tools.length > limit;
+const displayTools = tools.slice(0, limit);
+const nextCursor = hasNextPage ? displayTools[displayTools.length - 1].id : undefined;
+
+// Fetch Categories for FilterBar
+const { results: allCats } = await env.DB.prepare('SELECT name, slug FROM categories ORDER BY name ASC').all();
+
+// SEO Setup
+let pageTitle = '';
+let pageDescription = '';
+
+if (activeCat) {
+  if (pricingFilter) {
+    pageTitle = formatFilterTitle(activeCat.name, pricingFilter, pageNumber);
+    pageDescription = `Discover the top ${pricingFilter} AI tools for ${activeCat.name}. Updated daily with verified ratings and transparent pricing exactly for your needs.`;
+  } else {
+    pageTitle = formatCategoryTitle(activeCat.name, pageNumber);
+    pageDescription = activeCat.ai_description || `Explore ${activeCat.name} artificial intelligence tools. Read reviews, compare pricing, and find the perfect AI application for your workflow.`;
+  }
+} else {
+  if (pricingFilter) {
+    const capPricing = pricingFilter.charAt(0).toUpperCase() + pricingFilter.slice(1);
+    pageTitle = `${capPricing} AI Tools Directory — Top Picks ${new Date().getFullYear()}${pageNumber > 1 ? ` (Page ${pageNumber})` : ''} | AI Prompts Mall`;
+    pageDescription = `Browse our extensive collection of ${pricingFilter} artificial intelligence tools and software.`;
+  } else {
+    pageTitle = `All AI Tools Directory — ${new Date().getFullYear()}${pageNumber > 1 ? ` (Page ${pageNumber})` : ''} | AI Prompts Mall`;
+    pageDescription = `The complete directory of artificial intelligence tools, sorted by category and pricing.`;
+  }
+}
+
+// Build Base URL for Pagination
+let baseUrl = '/tools/';
+if (catSlug) baseUrl += `${catSlug}/`;
+if (pricingFilter) baseUrl += `${pricingFilter}/`;
+
+const schemaData = {
+  name: pageTitle,
+  description: pageDescription,
+  url: Astro.url.toString(),
+  numberOfItems: displayTools.length, // Ideally total count, but rendering current page tools for now
+  items: displayTools.map(t => ({ name: t.name, url: `https://aipromptsmall.shop/tools/${t.slug}/` }))
+};
+---
+
+<Base 
+  title={pageTitle} 
+  description={pageDescription}
+  schemaType="CollectionPage"
+  schemaData={schemaData}
+>
+  <div class="bg-indigo-50 dark:bg-slate-900 border-b border-indigo-100 dark:border-slate-800 py-12">
+    <div class="container mx-auto px-4 md:px-8 max-w-4xl text-center">
+      <h1 class="text-3xl md:text-5xl font-extrabold text-slate-900 dark:text-white capitalize leading-tight mb-4">
+        {pageTitle.split(' | ')[0].split(' — ')[0]}
+      </h1>
+      <p class="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
+        {pageDescription}
+      </p>
+    </div>
+  </div>
+
+  <div class="container mx-auto px-4 md:px-8 py-8 md:py-12 relative z-10">
+    <FilterBar 
+      categories={allCats as any[]} 
+      activeCategory={catSlug} 
+      activePricing={pricingFilter || undefined} 
+    />
+    
+    {displayTools.length > 0 ? (
+      <ToolGrid>
+        {displayTools.map((tool) => <ToolCard tool={tool} />)}
+      </ToolGrid>
+    ) : (
+      <div class="text-center py-24 mb-12 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl">
+        <svg class="w-16 h-16 mx-auto text-slate-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <h3 class="text-2xl font-bold text-slate-900 dark:text-white mb-2">No tools found</h3>
+        <p class="text-slate-600 dark:text-slate-400">Try adjusting your filters or category selection.</p>
+        <a href="/tools/" class="mt-6 inline-block bg-indigo-600 text-white font-medium px-6 py-2.5 rounded-full hover:bg-indigo-700 transition">View all tools</a>
+      </div>
+    )}
+
+    <Pagination 
+      currentPage={pageNumber} 
+      hasNextPage={hasNextPage} 
+      baseUrl={baseUrl} 
+      nextCursor={nextCursor} 
+    />
+  </div>
+</Base>

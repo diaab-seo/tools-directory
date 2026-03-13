@@ -1,0 +1,67 @@
+---
+import type { Tool } from '../lib/db';
+
+export interface Props {
+  tool: Tool;
+}
+
+const { tool } = Astro.props;
+
+// Formatting
+const displayRating = tool.rating ? tool.rating.toFixed(1) : 'New';
+const votes = tool.votes ? `(${tool.votes})` : '';
+const badgeColor = tool.pricing_slug === 'free' ? 'bg-emerald-100 text-emerald-800 border-emerald-200' 
+                 : tool.pricing_slug === 'freemium' ? 'bg-amber-100 text-amber-800 border-amber-200'
+                 : 'bg-indigo-100 text-indigo-800 border-indigo-200';
+---
+
+<a href={`/tools/${tool.slug}/`} 
+   class="group flex flex-col h-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+   data-pagefind-body
+   data-pagefind-meta={`title:${tool.name}, pricing:${tool.pricing_slug || 'free'}`}
+   data-pagefind-filter={`category:${tool.cat_slugs?.split(',')[0] || 'all'}`}
+>
+  {/* Tool Image Container */}
+  <div class="relative w-full aspect-[16/9] overflow-hidden bg-slate-100 dark:bg-slate-800">
+    <img 
+      src={tool.image_url} 
+      alt={`Screenshot of ${tool.name} AI tool`} 
+      loading="lazy"
+      class="object-cover w-full h-full transform group-hover:scale-105 transition-transform duration-500"
+    />
+    <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+  </div>
+
+  {/* Content Container */}
+  <div class="flex flex-col flex-grow p-5 space-y-4">
+    <div class="flex justify-between items-start gap-4">
+      <h3 class="text-xl font-bold text-slate-900 dark:text-white line-clamp-1" data-pagefind-meta="title">
+        {tool.name}
+      </h3>
+      <div class="flex flex-col items-end gap-1 flex-shrink-0">
+        <div class="flex items-center space-x-1 text-amber-500 bg-amber-50 dark:bg-amber-500/10 px-2 py-1 rounded-full text-sm font-medium">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z" clip-rule="evenodd"/>
+          </svg>
+          <span>{displayRating}</span>
+        </div>
+      </div>
+    </div>
+    
+    <p class="text-sm text-slate-600 dark:text-slate-400 line-clamp-3 leading-relaxed flex-grow">
+      {tool.ai_intro || tool.description}
+    </p>
+
+    {/* Footer Info */}
+    <div class="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800 mt-auto">
+      <span class={`px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider border ${badgeColor}`}>
+        {tool.pricing || 'Free'}
+      </span>
+      {tool.cat_names && (
+        <span class="text-xs font-medium text-slate-500 dark:text-slate-500 truncate max-w-[120px]">
+          {tool.cat_names.split(',')[0]}
+        </span>
+      )}
+    </div>
+  </div>
+</a>

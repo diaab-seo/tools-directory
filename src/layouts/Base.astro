@@ -1,0 +1,109 @@
+---
+import SchemaMarkup from '../components/SchemaMarkup.astro';
+
+export interface Props {
+  title: string;
+  description: string;
+  image?: string;
+  schemaType?: 'WebSite' | 'Organization' | 'SoftwareApplication' | 'CollectionPage';
+  schemaData?: any;
+}
+
+const { title, description, image = '/og-image.jpg', schemaType, schemaData } = Astro.props;
+const canonicalURL = new URL(Astro.url.pathname, Astro.site || 'https://aipromptsmall.shop');
+---
+
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    
+    <!-- Primary Meta Tags -->
+    <title>{title}</title>
+    <meta name="title" content={title} />
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalURL} />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={new URL(image, canonicalURL)} />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content={canonicalURL} />
+    <meta property="twitter:title" content={title} />
+    <meta property="twitter:description" content={description} />
+    <meta property="twitter:image" content={new URL(image, canonicalURL)} />
+
+    {/* Dynamic JSON-LD Schema injection */}
+    {schemaType && schemaData && <SchemaMarkup type={schemaType} data={schemaData} />}
+  </head>
+  <body class="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans antialiased flex flex-col selection:bg-indigo-500/30">
+    
+    {/* Global Header */}
+    <header class="sticky top-0 z-40 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
+      <div class="container mx-auto px-4 md:px-8 h-16 flex items-center justify-between">
+        <a href="/" class="flex items-center space-x-2 font-bold text-xl tracking-tight">
+          <svg class="w-8 h-8 text-indigo-600 dark:text-indigo-400" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400">AI Prompts Mall</span>
+        </a>
+        
+        <nav class="hidden md:flex items-center space-x-6">
+          <a href="/tools/" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Directory</a>
+          <a href="/categories/" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Categories</a>
+          <a href="/tools/free/" class="text-sm font-medium text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors">Free Tools</a>
+        </nav>
+        
+        {/* Mobile menu button (Simplified for blueprint) */}
+        <button class="md:hidden p-2 text-slate-600 dark:text-slate-400">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="flex-grow flex flex-col">
+      <slot />
+    </main>
+
+    {/* Global Footer */}
+    <footer class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-12 mt-12">
+      <div class="container mx-auto px-4 md:px-8 grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div class="md:col-span-2 space-y-4">
+          <a href="/" class="flex items-center space-x-2 font-bold text-xl">
+            <svg class="w-6 h-6 text-indigo-600 dark:text-indigo-400" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>AI Prompts Mall</span>
+          </a>
+          <p class="text-sm text-slate-500 dark:text-slate-400 max-w-sm">
+            The largest directory of free and premium Artificial Intelligence tools, updated daily to help you find the best software for your workflows.
+          </p>
+        </div>
+        <div>
+          <h4 class="font-semibold text-slate-900 dark:text-white mb-4">Discover</h4>
+          <ul class="space-y-2 text-sm text-slate-600 dark:text-slate-400">
+            <li><a href="/tools/" class="hover:text-indigo-600 dark:hover:text-indigo-400">All AI Tools</a></li>
+            <li><a href="/categories/" class="hover:text-indigo-600 dark:hover:text-indigo-400">Categories</a></li>
+            <li><a href="/tools/free/" class="hover:text-indigo-600 dark:hover:text-indigo-400">Free Tools</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-semibold text-slate-900 dark:text-white mb-4">Legal</h4>
+          <ul class="space-y-2 text-sm text-slate-600 dark:text-slate-400">
+            <li><a href="/privacy" class="hover:text-indigo-600 dark:hover:text-indigo-400">Privacy Policy</a></li>
+            <li><a href="/terms" class="hover:text-indigo-600 dark:hover:text-indigo-400">Terms of Service</a></li>
+            <li><a href="/sitemap.xml" class="hover:text-indigo-600 dark:hover:text-indigo-400">Sitemap</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="container mx-auto px-4 md:px-8 mt-12 pt-8 border-t border-slate-200 dark:border-slate-800 text-sm text-center text-slate-500">
+        &copy; {new Date().getFullYear()} AI Prompts Mall. All rights reserved.
+      </div>
+    </footer>
+  </body>
+</html>

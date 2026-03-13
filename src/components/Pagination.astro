@@ -1,0 +1,53 @@
+---
+export interface Props {
+  currentPage: number;
+  hasNextPage: boolean;
+  baseUrl: string;
+  nextCursor?: number;
+}
+
+const { currentPage, hasNextPage, baseUrl, nextCursor } = Astro.props;
+
+// Blueprint Rule: baseUrl should be like '/tools/image-generation/'
+const prevPageUrl = currentPage === 2 ? baseUrl : `${baseUrl}page/${currentPage - 1}/`;
+const nextPageUrl = nextCursor ? `${baseUrl}page/${currentPage + 1}/?cursor=${nextCursor}` : `${baseUrl}page/${currentPage + 1}/`;
+---
+
+{ /* Only render pagination if there are pages */ }
+{(currentPage > 1 || hasNextPage) && (
+  <nav class="flex items-center justify-center space-x-4 mt-12 mb-8" aria-label="Pagination">
+    {currentPage > 1 ? (
+      <a 
+        href={prevPageUrl}
+        class="flex items-center space-x-2 px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all font-medium"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg>
+        <span>Previous</span>
+      </a>
+    ) : (
+      <span class="flex items-center space-x-2 px-5 py-2.5 rounded-xl border border-slate-100 dark:border-slate-800/50 bg-slate-50 dark:bg-slate-900/50 text-slate-400 dark:text-slate-600 cursor-not-allowed font-medium opacity-50">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg>
+        <span>Previous</span>
+      </span>
+    )}
+
+    <span class="text-sm font-semibold text-slate-500 dark:text-slate-400 px-4">
+      Page {currentPage}
+    </span>
+
+    {hasNextPage ? (
+      <a 
+        href={nextPageUrl}
+        class="flex items-center space-x-2 px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all font-medium"
+      >
+        <span>Next</span>
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
+      </a>
+    ) : (
+      <span class="flex items-center space-x-2 px-5 py-2.5 rounded-xl border border-slate-100 dark:border-slate-800/50 bg-slate-50 dark:bg-slate-900/50 text-slate-400 dark:text-slate-600 cursor-not-allowed font-medium opacity-50">
+        <span>Next</span>
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
+      </span>
+    )}
+  </nav>
+)}
